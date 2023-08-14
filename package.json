@@ -1,0 +1,20 @@
+{
+  "name": "prerelease-action",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.2",
+    "@types/lodash": "^4.14.197",
+    "rollup": "^3.28.0",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}

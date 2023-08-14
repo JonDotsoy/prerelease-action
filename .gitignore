@@ -1,0 +1,5 @@
+!.nvmrc
+!.gitignore
+node_modules
+!.editorconfig
+dist
