@@ -1,0 +1,26 @@
+name: Prerelease Action
+
+description: Automate merge the pre-release changes
+
+inputs:
+  label_to_filter:
+    description: Label name to find PRs
+    required: true
+    default: pre-release
+  base_brach:
+    description: Branch name used to make the pre-release branch
+    default: develop
+    required: true
+  destination_brach:
+    description: name of pre-release branch
+    default: pre-release
+    required: true
+
+outputs:
+  pre_release_created:
+    description: |
+      `true` if pre-release branch was created, `false` otherwise
+
+runs:
+  using: "node16"
+  main: "src/action.js"

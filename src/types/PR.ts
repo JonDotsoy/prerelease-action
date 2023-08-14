@@ -1,0 +1,55 @@
+export interface PR {
+  additions: any;
+  assignees: any;
+  author: {
+    id: string;
+    is_bot: boolean;
+    login: string;
+    name: string;
+  };
+  autoMergeRequest: any;
+  baseRefName: string;
+  body: any;
+  changedFiles: any;
+  closed: boolean;
+  closedAt: any;
+  comments: any;
+  commits: any;
+  createdAt: any;
+  deletions: any;
+  files: any;
+  headRefName: string;
+  headRefOid: string;
+  headRepository: any;
+  headRepositoryOwner: any;
+  id: string;
+  isCrossRepository: any;
+  isDraft: boolean;
+  labels: {
+    id: string;
+    name: string;
+    description: string;
+    color: string;
+  }[];
+  latestReviews: any;
+  maintainerCanModify: any;
+  mergeCommit: any;
+  mergeStateStatus: any;
+  mergeable: any;
+  mergedAt: any;
+  mergedBy: any;
+  milestone: any;
+  number: number;
+  potentialMergeCommit: any;
+  projectCards: any;
+  projectItems: any;
+  reactionGroups: any;
+  reviewDecision: any;
+  reviewRequests: any;
+  reviews: any;
+  state: "OPEN";
+  statusCheckRollup: any;
+  title: any;
+  updatedAt: any;
+  url: any;
+}

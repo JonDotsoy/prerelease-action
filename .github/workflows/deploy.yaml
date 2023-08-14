@@ -1,0 +1,43 @@
+name: 🚀 Deploy
+
+on:
+  push:
+    branches: release/v*
+
+permissions:
+  contents: write
+  statuses: write
+
+jobs:
+  deploy:
+    name: 🚀 Deploy ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Configure author github-actions[bot] at GIT
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Setup Node16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Clean Dev Dependencies
+        run: npm prune --omit=dev
+      - name: Add dependencies
+        run: git add -f src/ node_modules/
+      - name: Parepare version
+        id: version
+        run: echo VERSION=${GITHUB_REF_NAME#release/} >> $GITHUB_OUTPUT
+      - name: 🚀 Chore deploy ${{ steps.version.outputs.VERSION }}
+        run: |
+          git commit -m "chore: deploy ${{ steps.version.outputs.VERSION }}"
+          git tag -f ${{ steps.version.outputs.VERSION }}
+          git push -f origin ${{ steps.version.outputs.VERSION }}

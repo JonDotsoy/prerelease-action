@@ -1,0 +1,7 @@
+!.nvmrc
+!.gitignore
+node_modules
+!.editorconfig
+dist
+src/**/*.js
+src/**/*.js.map
