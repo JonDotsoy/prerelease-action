@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: JonDotsoy/prerelease-action@v0
+      - uses: JonDotsoy/prerelease-action@v1
         env:
           GH_TOKEN: ${{ github.token }}
 ```
