@@ -33,6 +33,7 @@ on:
   push:
     branches:
       - feature/* # Cualquier rama con prefijo `feature/`
+      - develop
 
 permissions:
   contents: write

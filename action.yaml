@@ -1,4 +1,9 @@
 name: Prerelease Action
+author: Jonathan Delgado <hi@jon.soy>
+
+branding:
+  icon: git-branch
+  color: orange
 
 description: Automate merge the pre-release changes
 
