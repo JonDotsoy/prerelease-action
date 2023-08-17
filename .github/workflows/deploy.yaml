@@ -28,9 +28,19 @@ jobs:
           release-type: node
           package-name: prerelease-action
           default-branch: ${{github.ref_name}}
+      - id: get_brach_name
+        run: |
+          echo head_branch_name="$(echo "$pr" | jq '.headBranchName' -r)" >> $GITHUB_OUTPUT
+        env:
+          pr: ${{ steps.release-please.outputs.pr }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{steps.get_brach_name.outputs.head_branch_name}}
       - id: capture-version
         run: |
           echo VERSION=$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created && '' || '-preview' }} >> $GITHUB_OUTPUT
+      - run: echo ${{steps.capture-version.outputs.VERSION}}
       - run: npm add semver
       - env:
           version: ${{steps.capture-version.outputs.VERSION}}
