@@ -39,7 +39,7 @@ jobs:
           ref: ${{steps.get_brach_name.outputs.head_branch_name}}
       - id: capture-version
         run: |
-          echo VERSION=$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created && '' || '-preview' }} >> $GITHUB_OUTPUT
+          echo VERSION=v$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created == 'true' && '' || '-preview' }} >> $GITHUB_OUTPUT
       - run: echo ${{steps.capture-version.outputs.VERSION}}
       - run: npm add semver
       - env:
@@ -49,8 +49,8 @@ jobs:
             if (!versionParsed) throw new Error(`Invalid version ${process.env.version}`);
             const sufix = versionParsed.prerelease.length ? `-${versionParsed.prerelease.join('.')}` : '';
             console.log(`VERSION=${process.env.version}`);
-            console.log(`VERSION_MINOR=${versionParsed.major}.${versionParsed.minor}${sufix}`);
-            console.log(`VERSION_MAJOR=${versionParsed.major}${sufix}`);
+            console.log(`VERSION_MINOR=v${versionParsed.major}.${versionParsed.minor}${sufix}`);
+            console.log(`VERSION_MAJOR=v${versionParsed.major}${sufix}`);
         run: node -e "$script" >> $GITHUB_OUTPUT
         id: prepare-version
 
