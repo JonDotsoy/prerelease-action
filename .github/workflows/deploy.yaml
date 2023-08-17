@@ -40,7 +40,7 @@ jobs:
       - id: capture-version
         run: |
           echo VERSION=v$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created == 'true' && '' || '-preview' }} >> $GITHUB_OUTPUT
-      - run: echo ${{steps.capture-version.outputs.VERSION}}
+      - run: echo ${{steps.capture-version.outputs.VERSION}} release created ${{steps.release-please.outputs.releases_created}}
       - run: npm add semver
       - env:
           version: ${{steps.capture-version.outputs.VERSION}}
