@@ -7,9 +7,45 @@ on:
 permissions:
   contents: write
   statuses: write
+  pull-requests: write
 
 jobs:
+  manifest-version:
+    name: ⚙️ Prepare version
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{steps.release-please.outputs.releases_created}}
+      version: ${{steps.prepare-version.outputs.VERSION}}
+      version_minor: ${{steps.prepare-version.outputs.VERSION_MINOR}}
+      version_major: ${{steps.prepare-version.outputs.VERSION_MAJOR}}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: google-github-actions/release-please-action@v3
+        id: release-please
+        with:
+          release-type: node
+          package-name: prerelease-action
+          default-branch: ${{github.ref_name}}
+      - id: capture-version
+        run: |
+          echo VERSION=$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created && '' || '-preview' }} >> $GITHUB_OUTPUT
+      - run: npm add semver
+      - env:
+          version: ${{steps.capture-version.outputs.VERSION}}
+          script: |
+            const versionParsed = require("semver").parse(process.env.version);
+            if (!versionParsed) throw new Error(`Invalid version ${process.env.version}`);
+            const sufix = versionParsed.prerelease.length ? `-${versionParsed.prerelease.join('.')}` : '';
+            console.log(`VERSION=${process.env.version}`);
+            console.log(`VERSION_MINOR=${versionParsed.major}.${versionParsed.minor}${sufix}`);
+            console.log(`VERSION_MAJOR=${versionParsed.major}${sufix}`);
+        run: node -e "$script" >> $GITHUB_OUTPUT
+        id: prepare-version
+
   deploy:
+    needs: manifest-version
     name: 🚀 Deploy ${{ github.ref_name }}
     runs-on: ubuntu-latest
     steps:
@@ -33,11 +69,12 @@ jobs:
         run: npm prune --omit=dev
       - name: Add dependencies
         run: git add -f src/ node_modules/
-      - name: Parepare version
-        id: version
-        run: echo VERSION=${GITHUB_REF_NAME#release/} >> $GITHUB_OUTPUT
-      - name: 🚀 Chore deploy ${{ steps.version.outputs.VERSION }}
+      - name: 🚀 Chore deploy ${{ needs.manifest-version.outputs.version }}
         run: |
-          git commit -m "chore: deploy ${{ steps.version.outputs.VERSION }}"
-          git tag -f ${{ steps.version.outputs.VERSION }}
-          git push -f origin ${{ steps.version.outputs.VERSION }}
+          git commit -m "chore: deploy ${{ needs.manifest-version.outputs.version }}"
+          git tag -f ${{ needs.manifest-version.outputs.version }}
+          git tag -f ${{ needs.manifest-version.outputs.version_minor }}
+          git tag -f ${{ needs.manifest-version.outputs.version_major }}
+          git push -f origin ${{ needs.manifest-version.outputs.version }}
+          git push -f origin ${{ needs.manifest-version.outputs.version_minor }}
+          git push -f origin ${{ needs.manifest-version.outputs.version_major }}

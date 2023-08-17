@@ -3,7 +3,7 @@
 Automatiza los merge de los cambios previo al lanzamiento en una única rama que
 contiene todos los cambios de todos los PR que futuramente puede ser usados para
 la rama principal. Evita pasar cambios a la rama de desarrollo si estos nos han
-finalizados o requiren mejoras. Ideal si se cuenta con un solo ambiente de
+finalizados o requieren mejoras. Ideal si se cuenta con un solo ambiente de
 staging anidado a la rama de desarrollo.
 
 **Ventajas:**
