@@ -1,8 +1,13 @@
 import { exec } from "@actions/exec";
-import { getInput, setFailed, setOutput } from "@actions/core";
+import { debug, getInput, setFailed, setOutput } from "@actions/core";
 import { inspect } from "node:util";
 import { listAvailablePRs } from "./utils/gh/listAvailablePRs";
 import { git } from "./utils/git/git";
+import { makeListStringHistory } from "./utils/general/ref-history";
+import {
+  getLocalRefHistory,
+  setLocalRefHistory,
+} from "./utils/general/get-local-ref-history";
 
 interface Options {
   labelToFilter: string;
@@ -15,12 +20,21 @@ export const main = async (
 ) => {
   const prs = await listAvailablePRs(labelToFilter);
 
+  const payloadPreReleaseHistory = makeListStringHistory(prs);
+
   await exec("git", ["config", "user.name", "github-actions[bot]"]);
   await exec("git", [
     "config",
     "user.email",
     "41898282+github-actions[bot]@users.noreply.github.com",
   ]);
+
+  const committedRefHistory = await getLocalRefHistory(destinationBranch);
+
+  if (committedRefHistory === payloadPreReleaseHistory) {
+    debug(`Skip merge histories`);
+    return;
+  }
 
   await exec("git", ["branch", "-d", destinationBranch], {
     ignoreReturnCode: true,
@@ -47,6 +61,7 @@ export const main = async (
     }
   }
 
+  await setLocalRefHistory(payloadPreReleaseHistory);
   await exec("git", ["push", "-f", "origin", destinationBranch]);
 };
 
