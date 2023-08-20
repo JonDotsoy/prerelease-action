@@ -16,7 +16,7 @@ interface Options {
 
 export const action = async (
   { labelNameToMerge, baseBranch, ...options }: Options,
-) => {
+): Promise<boolean> => {
   const prs = await listAvailablePRs(labelNameToMerge);
   const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
 
@@ -37,7 +37,7 @@ export const action = async (
 
   if (committedRefHistory === payloadPreReleaseHistory) {
     debug(`Cannot found new history to merge`);
-    return;
+    return false;
   }
 
   await exec("git", ["branch", "-D", destinationBranch], {
@@ -48,7 +48,7 @@ export const action = async (
 
   if (!prs.length) {
     debug(`Cannot found features branches`);
-    return;
+    return false;
   }
 
   for (const pr of prs) {
@@ -72,4 +72,5 @@ export const action = async (
   await setLocalRefHistory(payloadPreReleaseHistory);
   await exec("git", ["push", "-f", "origin", destinationBranch]);
   await git.switchOnly(baseBranch);
+  return true;
 };

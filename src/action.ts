@@ -32,8 +32,8 @@ action({
   baseBranch: baseBranch,
   destinationBranch: destinationBranch ? destinationBranch : `pre-${baseBranch}`,
 })
-  .then(() => {
-    setOutput("created", true);
+  .then((s) => {
+    setOutput("created", s);
   })
   .catch((ex) => {
     setOutput("created", false);
