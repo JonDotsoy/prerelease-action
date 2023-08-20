@@ -66,14 +66,14 @@ jobs:
 
 ## Configuración
 
-|        Input        | Descripción                                                           |
-| :-----------------: | :-------------------------------------------------------------------- |
-|  `label_to_filter`  | Label que se usara para filtrar los PRs que coincidan                 |
-|    `base_brach`     | Nombre de la rama que se usara como base para crear el PR pre-release |
-| `destination_brach` | Nombre de la rama pre-release                                         |
+|         Input         | Descripción                                                           |
+| :-------------------: | :-------------------------------------------------------------------- |
+| `label_name_to_merge` | Label que se usara para filtrar los PRs que coincidan                 |
+|     `base_brach`      | Nombre de la rama que se usara como base para crear el PR pre-release |
+|  `destination_brach`  | Nombre de la rama pre-release                                         |
 
 ## Salida
 
-|        Output         | Descripción                                                                       |
-| :-------------------: | :-------------------------------------------------------------------------------- |
-| `pre_release_created` | `true` si fue creado correctamente la rama pre-release, de otro modo sera `false` |
+|  Output   | Descripción                                                                       |
+| :-------: | :-------------------------------------------------------------------------------- |
+| `created` | `true` si fue creado correctamente la rama pre-release, de otro modo sera `false` |
