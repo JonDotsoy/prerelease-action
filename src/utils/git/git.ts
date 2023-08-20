@@ -1,4 +1,4 @@
-import { ExecOptions, exec } from "@actions/exec";
+import { exec, ExecOptions } from "@actions/exec";
 
 export const git = async (...args: string[]) => {
   let out = new Uint8Array();
@@ -34,4 +34,15 @@ git.switch = async (branchName: string, branchBase: string) => {
   }
 
   throw new Error(`Failed switch branch exist code ${firstIntentCodeStatus}`);
+};
+
+git.currentHead = async (): Promise<string> => {
+  let out = new Uint8Array([]);
+  await exec("git", ["rev-parse", "HEAD"], {
+    listeners: {
+      stdout: (e) => out = new Uint8Array([...out, ...e]),
+    },
+  });
+
+  return new TextDecoder().decode(out);
 };

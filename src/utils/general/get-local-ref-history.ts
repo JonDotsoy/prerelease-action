@@ -17,7 +17,6 @@ export const setLocalRefHistory = async (
       stdout: (e) => (statusMessage = new Uint8Array([...statusMessage, ...e])),
     },
   });
-  console.log({ statusMessage: statusMessage.length });
   if (statusMessage.length) {
     await exec("git", ["commit", "-m", `chore: add ${REF_HISTORY_NAME}`]);
   }

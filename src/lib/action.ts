@@ -20,7 +20,9 @@ export const action = async (
   const prs = await listAvailablePRs(labelNameToMerge);
   const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
 
-  const payloadPreReleaseHistory = makeListStringHistory(prs);
+  await git.switchOnly(baseBranch);
+
+  const payloadPreReleaseHistory = makeListStringHistory(await git.currentHead(), prs);
 
   await git.setConfig("user.name", "github-actions[bot]");
   await git.setConfig(

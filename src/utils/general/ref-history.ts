@@ -1,7 +1,10 @@
 import { PR } from "../../types/PR";
 
 export const makeListStringHistory = <
-  T extends Pick<PR, "number">,
+  T extends Pick<PR, "number" | "headRefOid">,
 >(
+  mainHeadRefOid: string,
   prs: T[],
-): string => prs.map((pr) => `${pr.number}\n`).join("");
+): string =>
+  [`${mainHeadRefOid}\n`, prs.map((pr) => `${pr.number} ${pr.headRefOid}\n`)]
+    .join("");
