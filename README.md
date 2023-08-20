@@ -1,4 +1,6 @@
-# Prerelease
+# Feature Branching
+
+Automatiza el merge de todos los branch que cuenten con un label asociado.
 
 Automatiza los merge de los cambios previo al lanzamiento en una única rama que
 contiene todos los cambios de todos los PR que futuramente puede ser usados para

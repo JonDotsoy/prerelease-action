@@ -10,13 +10,13 @@ import {
 } from "./utils/general/get-local-ref-history";
 
 interface Options {
-  labelToFilter: string;
+  labelNameToMerge: string;
   baseBranch: string;
   destinationBranch: string;
 }
 
 export const main = async (
-  { labelToFilter, baseBranch, destinationBranch }: Options,
+  { labelNameToMerge: labelToFilter, baseBranch, destinationBranch }: Options,
 ) => {
   const prs = await listAvailablePRs(labelToFilter);
 
@@ -29,7 +29,10 @@ export const main = async (
     "41898282+github-actions[bot]@users.noreply.github.com",
   ]);
 
-  const committedRefHistory = await getLocalRefHistory(destinationBranch);
+  const committedRefHistory = await getLocalRefHistory(
+    destinationBranch,
+    baseBranch,
+  );
 
   if (committedRefHistory === payloadPreReleaseHistory) {
     debug(`Skip merge histories`);
@@ -65,36 +68,38 @@ export const main = async (
   await exec("git", ["push", "-f", "origin", destinationBranch]);
 };
 
+const labelNameToMerge = getInput(
+  "label_name_to_merge",
+  {
+    required: true,
+    trimWhitespace: true,
+  },
+);
+const baseBranch = getInput(
+  "base_brach",
+  {
+    required: true,
+    trimWhitespace: true,
+  },
+);
+const destinationBranch = getInput(
+  "destination_brach",
+  {
+    required: false,
+    trimWhitespace: true,
+  },
+);
+
 main({
-  labelToFilter: getInput(
-    "label_to_filter",
-    {
-      required: true,
-      trimWhitespace: true,
-    },
-  ),
-
-  baseBranch: getInput(
-    "base_brach",
-    {
-      required: true,
-      trimWhitespace: true,
-    },
-  ),
-
-  destinationBranch: getInput(
-    "destination_brach",
-    {
-      required: true,
-      trimWhitespace: true,
-    },
-  ),
+  labelNameToMerge: labelNameToMerge,
+  baseBranch: baseBranch,
+  destinationBranch: destinationBranch,
 })
   .then(() => {
-    setOutput("pre_release_created", true);
+    setOutput("created", true);
   })
   .catch((ex) => {
-    setOutput("pre_release_created", false);
+    setOutput("created", false);
     console.error(ex);
     setFailed(
       typeof ex === "string"

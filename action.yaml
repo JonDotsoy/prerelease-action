@@ -1,30 +1,27 @@
-name: Prerelease Action
-author: Jonathan Delgado <hi@jon.soy>
+name: Feature Branching
+author: Jonathan Delgado <hi@jon.soy> (https://jon.soy)
 
 branding:
   icon: git-branch
   color: orange
 
-description: Automate merge the pre-release changes
+description: Automate merge all branching tagged
 
 inputs:
-  label_to_filter:
-    description: Label name to find PRs
+  label_name_to_merge:
+    description: Label used to select branch. Ex. `future-branch`
     required: true
-    default: pre-release
   base_brach:
-    description: Branch name used to make the pre-release branch
-    default: develop
+    description: Branch name used to make the branch. Ex. `master`
     required: true
   destination_brach:
-    description: name of pre-release branch
-    default: pre-release
-    required: true
+    description: name of branch to merge branches tagged. Per default add the prefix `pre-` at the name base branch. Ex. `pre-master`
+    required: false
 
 outputs:
-  pre_release_created:
+  created:
     description: |
-      `true` if pre-release branch was created, `false` otherwise
+      `true` if the feature branch was created, `false` otherwise.
 
 runs:
   using: "node16"
