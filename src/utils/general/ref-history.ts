@@ -6,5 +6,5 @@ export const makeListStringHistory = <
   mainHeadRefOid: string,
   prs: T[],
 ): string =>
-  [`${mainHeadRefOid}\n`, prs.map((pr) => `${pr.number} ${pr.headRefOid}\n`)]
+  [`${mainHeadRefOid}\n`, ...prs.map((pr) => `${pr.number} ${pr.headRefOid}\n`)]
     .join("");
