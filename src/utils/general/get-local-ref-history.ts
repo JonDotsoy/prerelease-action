@@ -3,14 +3,24 @@ import { exec } from "@actions/exec";
 import { existsSync } from "fs";
 import { REF_HISTORY_NAME } from "../common/ref-history-name";
 import { readFile, writeFile } from "fs/promises";
+import { git } from "../git/git";
 
 export const setLocalRefHistory = async (
   payloadRefHistory: string,
 ) => {
   debug(`Write ${REF_HISTORY_NAME} file`);
   await writeFile(REF_HISTORY_NAME, payloadRefHistory);
-  await exec("git", ["add", REF_HISTORY_NAME]);
-  await exec("git", ["commit", "-m", `chore: add ${REF_HISTORY_NAME}`]);
+  await exec("git", ["add", "-f", REF_HISTORY_NAME]);
+  let statusMessage = new Uint8Array();
+  await exec("git", ["status", "-z"], {
+    listeners: {
+      stdout: (e) => (statusMessage = new Uint8Array([...statusMessage, ...e])),
+    },
+  });
+  console.log({ statusMessage: statusMessage.length });
+  if (statusMessage.length) {
+    await exec("git", ["commit", "-m", `chore: add ${REF_HISTORY_NAME}`]);
+  }
 };
 
 export const getLocalRefHistory = async (
@@ -18,7 +28,7 @@ export const getLocalRefHistory = async (
   backBranch: string,
 ): Promise<string | null> => {
   // Verify changes
-  const codeStatus = await exec("git", ["switch", destinationBranch], {
+  const codeStatus = await git.switchOnly(destinationBranch, {
     ignoreReturnCode: true,
   });
 
@@ -26,12 +36,12 @@ export const getLocalRefHistory = async (
     if (existsSync(REF_HISTORY_NAME)) {
       debug(`Found ${REF_HISTORY_NAME} file`);
       const payload = await readFile(REF_HISTORY_NAME, "utf-8");
-      await exec("git", ["switch", backBranch]);
+      await git.switchOnly(backBranch);
       return payload;
     }
   }
 
-  await exec("git", ["switch", backBranch]);
+  await git.switchOnly(backBranch);
 
   return null;
 };
