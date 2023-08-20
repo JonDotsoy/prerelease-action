@@ -30,7 +30,7 @@ const destinationBranch = getInput(
 action({
   labelNameToMerge: labelNameToMerge,
   baseBranch: baseBranch,
-  destinationBranch: destinationBranch,
+  destinationBranch: destinationBranch ? destinationBranch : `pre-${baseBranch}`,
 })
   .then(() => {
     setOutput("created", true);
