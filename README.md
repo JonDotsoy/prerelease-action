@@ -48,7 +48,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: JonDotsoy/prerelease-action@v1
+      - uses: JonDotsoy/feature-branching@v2-preview
+        with:
+          base_brach: develop
+          label_name_to_merge: next-feature
         env:
           GH_TOKEN: ${{ github.token }}
 ```
