@@ -73,6 +73,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ref: ${{needs.manifest-version.outputs.head_branch_name}}
       - name: Configure author github-actions[bot] at GIT
         run: |
           git config user.name github-actions[bot]
