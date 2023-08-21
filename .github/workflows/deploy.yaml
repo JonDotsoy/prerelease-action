@@ -15,14 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       releases_created: ${{steps.release-please.outputs.releases_created}}
+      head_branch_name: ${{steps.get_brach_name.outputs.head_branch_name}}
       version: ${{steps.prepare-version.outputs.VERSION}}
       version_minor: ${{steps.prepare-version.outputs.VERSION_MINOR}}
       version_major: ${{steps.prepare-version.outputs.VERSION_MAJOR}}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: google-github-actions/release-please-action@v3
+      - name: Prerelease Action
+        uses: google-github-actions/release-please-action@v3
         id: release-please
         with:
           release-type: node
@@ -30,16 +33,24 @@ jobs:
           default-branch: ${{github.ref_name}}
       - id: get_brach_name
         run: |
-          echo head_branch_name="$(echo "$pr" | jq '.headBranchName' -r)" >> $GITHUB_OUTPUT
+          echo head_branch_name="$(echo "${pr:=$default_pr}" | jq '.headBranchName' -r)" >> $GITHUB_OUTPUT
         env:
           pr: ${{ steps.release-please.outputs.pr }}
+          default_pr: |
+            {"headBranchName":"${{ github.ref_name }}"}
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{steps.get_brach_name.outputs.head_branch_name}}
+      - name: Update publish config
+        run: npm pkg set publishConfig.tag=preview
+      - name: Update publish config (With Latest)
+        if: steps.release-please.outputs.releases_created
+        run: npm pkg set publishConfig.tag=latest
       - id: capture-version
+        name: Describe version relative
         run: |
-          echo VERSION=v$(jq '.version' package.json -r)${{ steps.release-please.outputs.releases_created == 'true' && '' || '-preview' }} >> $GITHUB_OUTPUT
+          echo VERSION=v$(jq 'if .publishConfig.tag == "latest" then "\(.version)" else  "\(.version)-\(.publishConfig.tag)" end' package.json -r) >> $GITHUB_OUTPUT
       - run: echo ${{steps.capture-version.outputs.VERSION}} release created ${{steps.release-please.outputs.releases_created}}
       - run: npm add semver
       - env:
