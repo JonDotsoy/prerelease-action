@@ -2,27 +2,37 @@ import { exec } from "@actions/exec";
 import { debug } from "@actions/core";
 import { listAvailablePRs } from "../utils/gh/listAvailablePRs";
 import { git } from "../utils/git/git";
-import { makeListStringHistory } from "../utils/general/ref-history";
+import { makeHashHistory } from "../utils/general/ref-history";
 import {
   getLocalRefHistory,
   setLocalRefHistory,
 } from "../utils/general/get-local-ref-history";
 
-interface Options {
+export interface Options {
   labelNameToMerge: string;
   baseBranch: string;
   destinationBranch?: string;
 }
 
+export interface ActionReturn {
+  /** Describe if exists changes on history */
+  changed: boolean;
+  /** Describe the PR the the last changes */
+  prName: string;
+}
+
 export const action = async (
   { labelNameToMerge, baseBranch, ...options }: Options,
-): Promise<boolean> => {
+): Promise<ActionReturn> => {
   const prs = await listAvailablePRs(labelNameToMerge);
   const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
 
   await git.switchOnly(baseBranch);
 
-  const payloadPreReleaseHistory = makeListStringHistory(await git.currentHead(), prs);
+  const hashHistory = makeHashHistory(
+    await git.currentHead(),
+    prs,
+  );
 
   await git.setConfig("user.name", "github-actions[bot]");
   await git.setConfig(
@@ -32,14 +42,17 @@ export const action = async (
   // git config advice.addIgnoredFile false
   await git.setConfig("advice.addIgnoredFile", "false");
 
-  const committedRefHistory = await getLocalRefHistory(
+  const hashHistoryCommitted = await getLocalRefHistory(
     destinationBranch,
     baseBranch,
   );
 
-  if (committedRefHistory === payloadPreReleaseHistory) {
+  if (hashHistoryCommitted === hashHistory) {
     debug(`Cannot found new history to merge`);
-    return false;
+    return {
+      changed: false,
+      prName: hashHistoryCommitted ? destinationBranch : baseBranch,
+    };
   }
 
   await exec("git", ["branch", "-D", destinationBranch], {
@@ -50,7 +63,7 @@ export const action = async (
 
   if (!prs.length) {
     debug(`Cannot found features branches`);
-    return false;
+    return { changed: false, prName: baseBranch };
   }
 
   for (const pr of prs) {
@@ -71,8 +84,8 @@ export const action = async (
     }
   }
 
-  await setLocalRefHistory(payloadPreReleaseHistory);
+  await setLocalRefHistory(hashHistory);
   await exec("git", ["push", "-f", "origin", destinationBranch]);
   await git.switchOnly(baseBranch);
-  return true;
+  return { changed: true, prName: destinationBranch };
 };

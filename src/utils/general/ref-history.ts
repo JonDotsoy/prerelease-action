@@ -1,6 +1,6 @@
 import { PR } from "../../types/PR";
 
-export const makeListStringHistory = <
+export const makeHashHistory = <
   T extends Pick<PR, "number" | "headRefOid">,
 >(
   mainHeadRefOid: string,

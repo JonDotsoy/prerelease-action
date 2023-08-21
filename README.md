@@ -77,6 +77,7 @@ jobs:
 
 ## Salida
 
-|  Output   | Descripción                                                                       |
-| :-------: | :-------------------------------------------------------------------------------- |
-| `created` | `true` si fue creado correctamente la rama pre-release, de otro modo sera `false` |
+|  Output   | Descripción                                                                                              |
+| :-------: | :------------------------------------------------------------------------------------------------------- |
+| `created` | `true` si fue creado correctamente la rama pre-release, de otro modo sera `false`                        |
+| `pr_name` | Retorna el valor de `destination_brach` si la pre-branch fue creada de otro modo retorna el `base_brach` |
