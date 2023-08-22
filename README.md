@@ -77,7 +77,7 @@ jobs:
 
 ## Salida
 
-|  Output   | Descripción                                                                                              |
-| :-------: | :------------------------------------------------------------------------------------------------------- |
-| `created` | `true` si fue creado correctamente la rama pre-release, de otro modo sera `false`                        |
-| `pr_name` | Retorna el valor de `destination_brach` si la pre-branch fue creada de otro modo retorna el `base_brach` |
+|  Output   | Descripción                                                                                            |
+| :-------: | :----------------------------------------------------------------------------------------------------- |
+| `changed` | `true` si existe cambios en la historia, de otro modo retorna `false`                                  |
+| `pr_name` | Retorna el valor de `destination_brach` cuenta con historia mergeada de otro modo retorna `base_brach` |
