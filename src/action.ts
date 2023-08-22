@@ -30,10 +30,13 @@ const destinationBranch = getInput(
 action({
   labelNameToMerge: labelNameToMerge,
   baseBranch: baseBranch,
-  destinationBranch: destinationBranch ? destinationBranch : `pre-${baseBranch}`,
+  destinationBranch: destinationBranch
+    ? destinationBranch
+    : `pre-${baseBranch}`,
 })
   .then((s) => {
-    setOutput("created", s);
+    setOutput("created", s.changed);
+    setOutput("pr_name", s.prName);
   })
   .catch((ex) => {
     setOutput("created", false);
