@@ -35,11 +35,11 @@ action({
     : `pre-${baseBranch}`,
 })
   .then((s) => {
-    setOutput("created", s.changed);
+    setOutput("changed", s.changed);
     setOutput("pr_name", s.prName);
   })
   .catch((ex) => {
-    setOutput("created", false);
+    setOutput("changed", false);
     console.error(ex);
     setFailed(
       typeof ex === "string"

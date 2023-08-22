@@ -61,11 +61,6 @@ export const action = async (
 
   await git.switch(destinationBranch, baseBranch);
 
-  if (!prs.length) {
-    debug(`Cannot found features branches`);
-    return { changed: false, prName: baseBranch };
-  }
-
   for (const pr of prs) {
     // git merge sample1 --no-ff -m "(#1) sampel1"
     try {
@@ -87,5 +82,5 @@ export const action = async (
   await setLocalRefHistory(hashHistory);
   await exec("git", ["push", "-f", "origin", destinationBranch]);
   await git.switchOnly(baseBranch);
-  return { changed: true, prName: destinationBranch };
+  return { changed: true, prName: prs.length ? destinationBranch : baseBranch };
 };
