@@ -47,6 +47,9 @@ export const action = async (
     baseBranch,
   );
 
+  debug("Current Hash History");
+  debug(hashHistoryCommitted ?? "[null]");
+
   if (hashHistoryCommitted === hashHistory) {
     debug(`Cannot found new history to merge`);
     return {
