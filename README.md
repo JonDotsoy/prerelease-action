@@ -1,4 +1,4 @@
-# Feature Branching
+# Feature Branching v2
 
 Automatiza el merge de todos los branch que cuenten con un label asociado.
 
@@ -24,7 +24,7 @@ staging anidado a la rama de desarrollo.
 
 ## Configurar action
 
-1. Crea tu primer archivo action `.github/workflows/feature-branch.yml` con el
+1. Crea tu primer archivo action `.github/workflows/feature-branching.yml` con el
    siguiente contenido.
 
 2. Vamos a configurar los eventos `pull_request` y `push` para que se ejecute el
@@ -72,12 +72,11 @@ staging anidado a la rama de desarrollo.
 
    <img src="./docs/img/snap-prs-on-github.png" width="400" alt="Snapshot of https://github.com/JonDotsoy/feature-branching-demo/pulls"/>
 
-5. Ahora se puede ver en la historia una nueva rama `pre-develop` que uni la
+5. Ahora se puede ver en la historia una nueva rama `pre-develop` que une la
    historia principal (`develop`) con los PRs que cuentan con el label
-   `next-feature`
+   `next-feature` en una nueva rama.
 
    <img src="./docs/img/snap-to-network-history.png" width="400" alt="snap to Network graph"/>
-
 
 ### Ejemplo completo
 
