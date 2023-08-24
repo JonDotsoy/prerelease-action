@@ -37,6 +37,7 @@ staging anidado a la rama de desarrollo.
         - labeled
         - unlabeled
         - synchronize
+        - ready_for_review
       branches:
         - develop
     push:
@@ -90,6 +91,7 @@ on:
       - labeled
       - unlabeled
       - synchronize
+      - ready_for_review
     branches:
       - develop
   push:
