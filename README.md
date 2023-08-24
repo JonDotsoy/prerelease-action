@@ -24,17 +24,77 @@ staging anidado a la rama de desarrollo.
 
 ## Configurar action
 
-1. Crea tu primer archivo action `.github/workflows/pre-release.yml` con el
+1. Crea tu primer archivo action `.github/workflows/feature-branch.yml` con el
    siguiente contenido.
 
+2. Vamos a configurar los eventos `pull_request` y `push` para que se ejecute el
+   flujo cuando se asigne o des-asigne una label a la rama base.
+   ```yaml
+   on:
+    workflow_dispatch: {}
+    pull_request:
+      types:
+        - labeled
+        - unlabeled
+        - synchronize
+      branches:
+        - develop
+    push:
+      branches:
+        - develop
+   ```
+
+3. Vamos a configurar la acción
+   [feature-branching](https://github.com/JonDotsoy/feature-branching) donde
+   tenemos que definir la rama base y que label se usara para crear la historia
+   mesclada. La acción necesita previamente tener todos la historia de git, para
+   esto usaremos la acción
+   [actions/checkout@v3](https://github.com/actions/checkout)
+
+   > Es necesario configurar la variable de ambiente `GH_TOKEN` para que pueda
+   > leer los PR del proyecto.
+
+   ```yaml
+   - uses: actions/checkout@v3
+     with:
+       fetch-depth: 0
+   - uses: JonDotsoy/feature-branching@v2-preview
+     with:
+       base_brach: develop
+       label_name_to_merge: next-feature
+     env:
+       GH_TOKEN: ${{ github.token }}
+   ```
+
+4. Crea un PR que este apuntando a la rama base `develop` y a continuación
+   asigna el label `next-feature` para que se encargue de crear la historia ya
+   combinada.
+
+   <img src="./docs/img/snap-prs-on-github.png" width="400" alt="Snapshot of https://github.com/JonDotsoy/feature-branching-demo/pulls"/>
+
+5. Ahora se puede ver en la historia una nueva rama `pre-develop` que uni la
+   historia principal (`develop`) con los PRs que cuentan con el label
+   `next-feature`
+
+   <img src="./docs/img/snap-to-network-history.png" width="400" alt="snap to Network graph"/>
+
+
+### Ejemplo completo
+
 ```yaml
-name: Prerelease
+name: feature-branch
 
 on:
   workflow_dispatch: {}
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+    branches:
+      - develop
   push:
     branches:
-      - feature/* # Cualquier rama con prefijo `feature/`
       - develop
 
 permissions:
@@ -54,18 +114,13 @@ jobs:
           label_name_to_merge: next-feature
         env:
           GH_TOKEN: ${{ github.token }}
+      - run: |
+          echo feature-branching.outputs.ref: ${{ steps.feature-branching.outputs.ref	 }}
+      - run: |
+          echo feature-branching.outputs.changed: ${{ steps.feature-branching.outputs.changed }}
+      - run: |
+          echo feature-branching.outputs.pr_name: ${{ steps.feature-branching.outputs.pr_name }}
 ```
-
-2. Crea un PR con un label de nombre `pre-release`.
-
-![Snapshot PR feature 1 with a circle on labels section](docs/img/snap-pr-on-github-focus-labels-section.png)
-
-3. Sube cambios al PR o ejecutar el action prerelease. Esto creara una rama con
-   todos los cambios candidatos a pre-release.
-
-![Snapshot PR feature 1 with a circle on history of commits](docs/img/snap-pr-on-github-focus-commit-section.png)
-
-![history commits](docs/img/history-of-commits.png)
 
 ## Configuración
 
