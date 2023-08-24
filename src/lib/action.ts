@@ -19,6 +19,8 @@ export interface ActionReturn {
   changed: boolean;
   /** Describe the PR the the last changes */
   prName: string;
+  /** REF hash of the last commit */
+  ref: string;
 }
 
 export const action = async (
@@ -52,9 +54,13 @@ export const action = async (
 
   if (hashHistoryCommitted === hashHistory) {
     debug(`Cannot found new history to merge`);
+    const prName = destinationBranch;
+    const ref = await git.revParse(prName);
+
     return {
       changed: false,
-      prName: hashHistoryCommitted ? destinationBranch : baseBranch,
+      prName,
+      ref,
     };
   }
 
@@ -85,5 +91,9 @@ export const action = async (
   await setLocalRefHistory(hashHistory);
   await exec("git", ["push", "-f", "origin", destinationBranch]);
   await git.switchOnly(baseBranch);
-  return { changed: true, prName: prs.length ? destinationBranch : baseBranch };
+
+  const prName = destinationBranch;
+  const ref = await git.revParse(prName);
+
+  return { changed: true, prName, ref };
 };

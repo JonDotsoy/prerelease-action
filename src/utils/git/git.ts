@@ -19,6 +19,14 @@ git.setConfig = (path: string, value: string) =>
 git.switchOnly = async (branchName: string, options?: ExecOptions) =>
   await exec("git", ["switch", branchName], options);
 
+git.revParse = async (refName: string) => {
+  let out = new Uint8Array();
+  await exec("git", ["rev-parse", refName], {
+    listeners: { stdout: (d) => out = new Uint8Array([...out, ...d]) },
+  });
+  return new TextDecoder().decode(out).trim();
+};
+
 git.switch = async (branchName: string, branchBase: string) => {
   const firstIntentCodeStatus = await exec("git", [
     "switch",

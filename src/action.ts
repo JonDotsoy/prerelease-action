@@ -37,6 +37,7 @@ action({
   .then((s) => {
     setOutput("changed", s.changed);
     setOutput("pr_name", s.prName);
+    setOutput("ref", s.ref);
   })
   .catch((ex) => {
     setOutput("changed", false);
@@ -48,4 +49,5 @@ action({
         ? ex.message
         : inspect(ex),
     );
+    process.exitCode = 1;
   });
