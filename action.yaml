@@ -17,6 +17,9 @@ inputs:
   destination_brach:
     description: name of branch to merge branches tagged. Per default add the prefix `pre-` at the name base branch. Ex. `pre-master`
     required: false
+  with_summary:
+    description: If is `true` print a summary on the pipeline
+    required: false
 
 outputs:
   created:

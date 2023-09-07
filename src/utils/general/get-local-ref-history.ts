@@ -25,7 +25,7 @@ export const setLocalRefHistory = async (
 export const getLocalRefHistory = async (
   destinationBranch: string,
   backBranch: string,
-): Promise<string | null> => {
+): Promise<{ payload: string; head: string } | null> => {
   // Verify changes
   const codeStatus = await git.switchOnly(destinationBranch, {
     ignoreReturnCode: true,
@@ -35,8 +35,9 @@ export const getLocalRefHistory = async (
     if (existsSync(REF_HISTORY_NAME)) {
       debug(`Found ${REF_HISTORY_NAME} file`);
       const payload = await readFile(REF_HISTORY_NAME, "utf-8");
+      const head = await git.revParse(destinationBranch);
       await git.switchOnly(backBranch);
-      return payload;
+      return { payload, head };
     }
   }
 
