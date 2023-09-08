@@ -1,85 +1,77 @@
+import {
+  flag,
+  flags,
+  isBooleanAt,
+  isStringAt,
+  makeHelmMessage,
+  Rule,
+  rule,
+} from "@jondotsoy/flags";
 import { action } from "./lib/action";
 
-type Ctx = { __: string[] } & { [k: string]: any };
-
-type Handler = (ctx: Ctx, index: number, arg: string, args: string[]) => number;
-
-type T = Map<
-  (arg: string) => boolean,
-  Handler
->;
-
-const makeFlag = (
-  args: string[],
-  spec: T,
-) => {
-  const ctx: Ctx = { __: [] };
-  let index = 0;
-  const handlersMap = Array.from(spec);
-  while (index < args.length) {
-    const arg = args[index];
-    const handler: Handler = handlersMap.find(([test]) =>
-      test(args[index])
-    )?.[1] ?? ((ctx, index, arg) => {
-      ctx.__.push(arg);
-      return index + 1;
-    });
-    index = handler(ctx, index, arg, args);
-  }
-  return ctx;
-};
-
-const spec: T = new Map();
-
-const flagIs = (flag: string, ...alt: string[]) => (arg: string) =>
-  [flag, ...alt].includes(arg);
-
-const singleValue = (propName: string): Handler =>
-(
-  ctx,
-  index,
-  arg,
-  args,
-) => {
-  ctx[propName] = args[index + 1];
-  return index + 2;
-};
-
-spec.set(
-  flagIs("--label_name_to_merge", "--labelNameToMerge", "-l"),
-  singleValue("labelNameToMerge"),
-);
-
-spec.set(
-  flagIs("--base_brach", "--baseBranch", "-b"),
-  singleValue("baseBranch"),
-);
-
-spec.set(
-  flagIs("--destination_brach", "--destinationBranch", "-d"),
-  singleValue("destinationBranch"),
-);
-
-function missingArgument<T extends Ctx, F extends string>(
-  ctx: T,
-  flag: string,
-) {
-  if (!ctx[flag]) {
-    throw new Error(`missing argument: --${flag}`);
+class CommandError extends Error {
+  constructor(ex: string, readonly helpMessage: () => string) {
+    super(ex);
   }
 }
 
+interface MainCli {
+  showHelp: boolean;
+  labelNameToMerge: string;
+  baseBranch: string;
+  destinationBranch: string;
+  withSummary: boolean;
+}
+
 const main = async (args: string[]) => {
-  const ctx = makeFlag(args, spec);
+  const rules: Rule<MainCli>[] = [
+    rule(flag("--help", "-h"), isBooleanAt("showHelp")),
+    rule(flag("--label-name-to-merge"), isStringAt("labelNameToMerge")),
+    rule(flag("--base-branch"), isStringAt("baseBranch")),
+    rule(flag("--with-summary"), isBooleanAt("withSummary")),
+  ];
 
-  missingArgument(ctx, `labelNameToMerge`);
-  missingArgument(ctx, `baseBranch`);
-  // missingArgument(ctx, `destinationBranch`);
+  const helpMessage = () => makeHelmMessage("feature-branching", rules);
 
-  await action(ctx as any);
+  const {
+    showHelp = false,
+    labelNameToMerge,
+    baseBranch,
+    destinationBranch,
+    withSummary = true,
+  } = flags<MainCli>(
+    args,
+    {},
+    rules,
+  );
+
+  if (showHelp) {
+    return console.log(helpMessage);
+  }
+
+  if (!labelNameToMerge) {
+    throw new CommandError(`Expected flag: --label-name-to-merge`, helpMessage);
+  }
+  if (!baseBranch) {
+    throw new CommandError(`Expected flag: --base-branch`, helpMessage);
+  }
+
+  await action({
+    baseBranch,
+    labelNameToMerge,
+    destinationBranch,
+    withSummary,
+  });
 };
 
-main(process.argv.slice(2)).catch((ex) => {
-  console.error(ex);
-  process.exitCode = process.exitCode ?? 1;
-});
+main(process.argv.slice(2))
+  .catch((ex) => {
+    process.exitCode = process.exitCode ?? 1;
+    if (ex instanceof CommandError) {
+      console.error(ex.message);
+      console.error();
+      console.error(ex.helpMessage());
+      return;
+    }
+    console.error(ex);
+  });

@@ -14,6 +14,7 @@ export interface Options {
   labelNameToMerge: string;
   baseBranch: string;
   destinationBranch?: string;
+  withSummary?: boolean;
 }
 
 export interface ActionReturn {
@@ -26,7 +27,7 @@ export interface ActionReturn {
 }
 
 export const action = async (
-  { labelNameToMerge, baseBranch, ...options }: Options,
+  { labelNameToMerge, baseBranch, withSummary = true, ...options }: Options,
 ): Promise<ActionReturn> => {
   const summaryTemplate = compile();
   const prs = await listAvailablePRs(labelNameToMerge);
@@ -61,17 +62,19 @@ export const action = async (
     const prName = destinationBranch;
     const ref = await git.revParse(prName);
 
-    await summary
-      .addRaw(summaryTemplate({
-        githubRepoURL:
-          `https://github.com/${context.repo.owner}/${context.repo.repo}`,
-        base: baseBranch,
-        baseHead: baseBranchHead,
-        destination: destinationBranch,
-        destinationHead: hashHistoryCommitted.head,
-        prs,
-      }))
-      .write();
+    if (withSummary) {
+      await summary
+        .addRaw(summaryTemplate({
+          githubRepoURL:
+            `https://github.com/${context.repo.owner}/${context.repo.repo}`,
+          base: baseBranch,
+          baseHead: baseBranchHead,
+          destination: destinationBranch,
+          destinationHead: hashHistoryCommitted.head,
+          prs,
+        }))
+        .write();
+    }
 
     return {
       changed: false,
@@ -111,17 +114,19 @@ export const action = async (
   const prName = destinationBranch;
   const ref = await git.revParse(prName);
 
-  await summary
-    .addRaw(summaryTemplate({
-      githubRepoURL:
-        `https://github.com/${context.repo.owner}/${context.repo.repo}`,
-      base: baseBranch,
-      baseHead: baseBranchHead,
-      destination: destinationBranch,
-      destinationHead: ref,
-      prs,
-    }))
-    .write();
+  if (withSummary) {
+    await summary
+      .addRaw(summaryTemplate({
+        githubRepoURL:
+          `https://github.com/${context.repo.owner}/${context.repo.repo}`,
+        base: baseBranch,
+        baseHead: baseBranchHead,
+        destination: destinationBranch,
+        destinationHead: ref,
+        prs,
+      }))
+      .write();
+  }
 
   return { changed: true, prName, ref };
 };
