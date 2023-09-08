@@ -1,5 +1,6 @@
 import { exec } from "@actions/exec";
-import { debug } from "@actions/core";
+import { debug, summary } from "@actions/core";
+import { context } from "@actions/github";
 import { listAvailablePRs } from "../utils/gh/listAvailablePRs";
 import { git } from "../utils/git/git";
 import { makeHashHistory } from "../utils/general/ref-history";
@@ -7,11 +8,13 @@ import {
   getLocalRefHistory,
   setLocalRefHistory,
 } from "../utils/general/get-local-ref-history";
+import { compile } from "../utils/template/compile";
 
 export interface Options {
   labelNameToMerge: string;
   baseBranch: string;
   destinationBranch?: string;
+  withSummary?: boolean;
 }
 
 export interface ActionReturn {
@@ -24,15 +27,17 @@ export interface ActionReturn {
 }
 
 export const action = async (
-  { labelNameToMerge, baseBranch, ...options }: Options,
+  { labelNameToMerge, baseBranch, withSummary = true, ...options }: Options,
 ): Promise<ActionReturn> => {
+  const summaryTemplate = compile();
   const prs = await listAvailablePRs(labelNameToMerge);
   const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
 
   await git.switchOnly(baseBranch);
 
+  const baseBranchHead = await git.currentHead();
   const hashHistory = makeHashHistory(
-    await git.currentHead(),
+    baseBranchHead,
     prs,
   );
 
@@ -50,12 +55,26 @@ export const action = async (
   );
 
   debug("Current Hash History");
-  debug(hashHistoryCommitted ?? "[null]");
+  debug(hashHistoryCommitted?.payload ?? "[null]");
 
-  if (hashHistoryCommitted === hashHistory) {
+  if (hashHistoryCommitted?.payload === hashHistory) {
     debug(`Cannot found new history to merge`);
     const prName = destinationBranch;
     const ref = await git.revParse(prName);
+
+    if (withSummary) {
+      await summary
+        .addRaw(summaryTemplate({
+          githubRepoURL:
+            `https://github.com/${context.repo.owner}/${context.repo.repo}`,
+          base: baseBranch,
+          baseHead: baseBranchHead,
+          destination: destinationBranch,
+          destinationHead: hashHistoryCommitted.head,
+          prs,
+        }))
+        .write();
+    }
 
     return {
       changed: false,
@@ -94,6 +113,20 @@ export const action = async (
 
   const prName = destinationBranch;
   const ref = await git.revParse(prName);
+
+  if (withSummary) {
+    await summary
+      .addRaw(summaryTemplate({
+        githubRepoURL:
+          `https://github.com/${context.repo.owner}/${context.repo.repo}`,
+        base: baseBranch,
+        baseHead: baseBranchHead,
+        destination: destinationBranch,
+        destinationHead: ref,
+        prs,
+      }))
+      .write();
+  }
 
   return { changed: true, prName, ref };
 };

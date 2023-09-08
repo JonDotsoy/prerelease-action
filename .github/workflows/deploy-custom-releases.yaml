@@ -1,0 +1,70 @@
+name: 🚀 Deploy
+
+on:
+  pull_request:
+    types:
+      - ready_for_review
+      - synchronize
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: write
+  statuses: write
+  pull-requests: write
+
+jobs:
+  is_ready_to_deploy:
+    name: 🛠️ Check is ready to deploy
+    runs-on: ubuntu-latest
+    outputs:
+      DEPLOY_PREVIEW: ${{ steps.able_to_deploy.outputs.WITH_LABEL }}
+      REF_NAME: ${{ steps.able_to_deploy.outputs.REF_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: able_to_deploy
+        run: |
+          WITH_LABEL=$(gh pr view ${{ env.PR_NUMBER }} --json=labels --jq 'any(.labels[]; select( .name == "${{ env.LABEL_NAME }}" ))')
+          REF_NAME=$(gh pr view ${{ env.PR_NUMBER }} --json=headRefName --jq '.headRefName')
+          echo "WITH_LABEL=$WITH_LABEL" >> "$GITHUB_OUTPUT"
+          echo "REF_NAME=$REF_NAME" >> "$GITHUB_OUTPUT"
+        env:
+          LABEL_NAME: deploy-preview
+          PR_NUMBER: ${{ github.event.number }}
+          GH_TOKEN: ${{ github.token }}
+
+  deploy:
+    needs: is_ready_to_deploy
+    if: needs.is_ready_to_deploy.outputs.DEPLOY_PREVIEW == 'true'
+    name: 🚀 Deploy ${{ needs.is_ready_to_deploy.outputs.REF_NAME }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.is_ready_to_deploy.outputs.REF_NAME }}
+      - name: Configure author github-actions[bot] at GIT
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Setup Node16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: npm
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Clean Dev Dependencies
+        run: npm prune --omit=dev
+      - name: Add dependencies
+        run: git add -f src/ node_modules/
+      - name: 🚀 Chore deploy ${{ needs.is_ready_to_deploy.outputs.REF_NAME }}
+        run: |
+          git commit -m "chore: deploy ${{ needs.is_ready_to_deploy.outputs.REF_NAME }}"
+          git tag -f "preview/${{ needs.is_ready_to_deploy.outputs.REF_NAME }}"
+          git push -f origin "preview/${{ needs.is_ready_to_deploy.outputs.REF_NAME }}"
