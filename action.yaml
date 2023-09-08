@@ -20,6 +20,7 @@ inputs:
   with_summary:
     description: If is `true` print a summary on the pipeline
     required: false
+    default: "true"
 
 outputs:
   created:

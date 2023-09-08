@@ -27,12 +27,21 @@ const destinationBranch = getInput(
   },
 );
 
+const withSummary = getInput(
+  "with_summary",
+  {
+    required: false,
+    trimWhitespace: true,
+  },
+);
+
 action({
   labelNameToMerge: labelNameToMerge,
   baseBranch: baseBranch,
   destinationBranch: destinationBranch
     ? destinationBranch
     : `pre-${baseBranch}`,
+  withSummary: withSummary === "true",
 })
   .then((s) => {
     setOutput("changed", s.changed);
