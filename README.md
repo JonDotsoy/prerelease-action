@@ -59,7 +59,7 @@ staging anidado a la rama de desarrollo.
    - uses: actions/checkout@v3
      with:
        fetch-depth: 0
-   - uses: JonDotsoy/feature-branching@v2-preview
+   - uses: JonDotsoy/feature-branching@v2
      with:
        base_brach: develop
        label_name_to_merge: next-feature
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: JonDotsoy/feature-branching@v2-preview
+      - uses: JonDotsoy/feature-branching@v2
         with:
           base_brach: develop
           label_name_to_merge: next-feature
