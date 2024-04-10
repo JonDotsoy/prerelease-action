@@ -10,6 +10,7 @@ const get_local_ref_history_1 = require("../utils/general/get-local-ref-history"
 const action = async ({ labelNameToMerge, baseBranch, ...options }) => {
     const prs = await (0, listAvailablePRs_1.listAvailablePRs)(labelNameToMerge);
     const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
+    const mergeStrategy = options.mergeStrategy;
     await git_1.git.switchOnly(baseBranch);
     const hashHistory = (0, ref_history_1.makeHashHistory)(await git_1.git.currentHead(), prs);
     await git_1.git.setConfig("user.name", "github-actions[bot]");
@@ -36,7 +37,7 @@ const action = async ({ labelNameToMerge, baseBranch, ...options }) => {
     for (const pr of prs) {
         // git merge sample1 --no-ff -m "(#1) sampel1"
         try {
-            await (0, git_1.git)("merge", pr.headRefOid, "--no-ff", "-m", `(#${pr.number}) ${pr.title}`);
+            await (0, git_1.git)("merge", pr.headRefOid, ...(mergeStrategy ? ["-X", mergeStrategy] : []), "--no-ff", "-m", `(#${pr.number}) ${pr.title}`);
         }
         catch (ex) {
             if (ex instanceof Error) {

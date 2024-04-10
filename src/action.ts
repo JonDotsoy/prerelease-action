@@ -27,12 +27,21 @@ const destinationBranch = getInput(
   },
 );
 
+const mergeStrategy = getInput(
+  "merge_strategy",
+  {
+    required: false,
+    trimWhitespace: true,
+  },
+);
+
 action({
   labelNameToMerge: labelNameToMerge,
   baseBranch: baseBranch,
   destinationBranch: destinationBranch
     ? destinationBranch
     : `pre-${baseBranch}`,
+  mergeStrategy,
 })
   .then((s) => {
     setOutput("changed", s.changed);
@@ -46,8 +55,8 @@ action({
       typeof ex === "string"
         ? ex
         : ex instanceof Error
-        ? ex.message
-        : inspect(ex),
+          ? ex.message
+          : inspect(ex),
     );
     process.exitCode = 1;
   });

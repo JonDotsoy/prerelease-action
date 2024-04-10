@@ -16,12 +16,17 @@ const destinationBranch = (0, core_1.getInput)("destination_brach", {
     required: false,
     trimWhitespace: true,
 });
+const mergeStrategy = (0, core_1.getInput)("merge_strategy", {
+    required: false,
+    trimWhitespace: true,
+});
 (0, action_1.action)({
     labelNameToMerge: labelNameToMerge,
     baseBranch: baseBranch,
     destinationBranch: destinationBranch
         ? destinationBranch
         : `pre-${baseBranch}`,
+    mergeStrategy,
 })
     .then((s) => {
     (0, core_1.setOutput)("changed", s.changed);

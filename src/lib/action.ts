@@ -12,6 +12,7 @@ export interface Options {
   labelNameToMerge: string;
   baseBranch: string;
   destinationBranch?: string;
+  mergeStrategy?: string;
 }
 
 export interface ActionReturn {
@@ -28,6 +29,7 @@ export const action = async (
 ): Promise<ActionReturn> => {
   const prs = await listAvailablePRs(labelNameToMerge);
   const destinationBranch = options.destinationBranch ?? `pre-${baseBranch}`;
+  const mergeStrategy = options.mergeStrategy
 
   await git.switchOnly(baseBranch);
 
@@ -76,6 +78,7 @@ export const action = async (
       await git(
         "merge",
         pr.headRefOid,
+        ...(mergeStrategy ? ["-X", mergeStrategy] : []),
         "--no-ff",
         "-m",
         `(#${pr.number}) ${pr.title}`,
