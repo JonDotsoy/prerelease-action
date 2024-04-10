@@ -130,6 +130,7 @@ jobs:
 | `label_name_to_merge` | Label que se usara para filtrar los PRs que coincidan                 |
 |     `base_brach`      | Nombre de la rama que se usara como base para crear el PR pre-release |
 |  `destination_brach`  | Nombre de la rama pre-release                                         |
+|   `merge_strategy`    | Describe la estrategia a usar al momento de mergear las ramas. Leer mas en [https://git-scm.com/docs/merge-strategies](https://git-scm.com/docs/merge-strategies) |
 
 ## Salida
 
